@@ -14,17 +14,11 @@ while True:
     print 'Temp: {0:0.1f} F Humidity: {1:0.1f} %'.format(temperature, humidity)
     try:
         if temperature < 76.5:    
-            try:
-                GPIO.output(2, GPIO.LOW)
-                time.sleep(10)
-            except:
-                print "Failed to turn on Relay"
+            GPIO.output(2, GPIO.LOW)
+            time.sleep(10)
         if temperature > 77.5:
-            try:
-                GPIO.output(2, GPIO.HIGH)
-                time.sleep(10)
-            except:
-                print "Failed to turn off Relay"
+            GPIO.output(2, GPIO.HIGH)
+            time.sleep(10)
     except KeyboardInterrupt:
         print " Killing process"
         GPIO.cleanup()
