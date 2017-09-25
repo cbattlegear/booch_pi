@@ -23,11 +23,41 @@ while True:
                 GPIO.output(2, GPIO.LOW)
                 heaterstatus = True
                 print "Heater on"
+                json_body = [
+                    {
+                        "measurement": "kombucha",
+                        "tags": {
+                            "kombucha": "environment1"
+                        },
+                        "fields": {
+            		        "heater_status": heaterstatus
+                        }
+                    }
+                ]
+                try:
+                    client.write_points(json_body)
+                except ConnectionError:
+                    print "Couldn't write to Influx"
         if temperature > 77.5:
             if heaterstatus:
                 GPIO.output(2, GPIO.HIGH)
                 heaterstatus = False
                 print "Heater off"
+                json_body = [
+                    {
+                        "measurement": "kombucha",
+                        "tags": {
+                            "kombucha": "environment1"
+                        },
+                        "fields": {
+            		        "heater_status": heaterstatus
+                        }
+                    }
+                ]
+                try:
+                    client.write_points(json_body)
+                except ConnectionError:
+                    print "Couldn't write to Influx"
         json_body = [
             {
                 "measurement": "kombucha",
@@ -36,8 +66,7 @@ while True:
                 },
                 "fields": {
                     "humidity": humidity,
-    		        "temperature": temperature,
-    		        "heater_status": heaterstatus
+    		        "temperature": temperature
                 }
             }
         ]
