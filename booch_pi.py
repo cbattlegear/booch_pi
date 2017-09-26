@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import RPi.GPIO as GPIO
 import time
+from datetime import datetime
 import Adafruit_DHT
 from influxdb import InfluxDBClient
 
@@ -11,17 +12,23 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(2, GPIO.OUT)
 GPIO.output(2, GPIO.HIGH)
 
-heaterstatus = False
+heaterstatus = 0
+heater_switch_time = datetime.now()
+heater_switch_time_change = datetime.now()
 
 while True:
     try:
         humidity, temperature = Adafruit_DHT.read_retry(22, 3)
         temperature = (temperature*1.8)+32
-        print 'Temp: {0:0.1f} F Humidity: {1:0.1f} %'.format(temperature, humidity)
+        #print 'Temp: {0:0.1f} F Humidity: {1:0.1f} %'.format(temperature, humidity)
         if temperature < 76.5:    
             if not heaterstatus:
                 GPIO.output(2, GPIO.LOW)
-                heaterstatus = True
+                heaterstatus = 1
+                heater_switch_time_change = datetime.now()
+                heater_on_time = heater_switch_time_change - heater_switch_time
+                print heater_on_time
+                heater_switch_time = datetime.now()
                 print "Heater on"
                 json_body = [
                     {
@@ -34,14 +41,18 @@ while True:
                         }
                     }
                 ]
-                try:
-                    client.write_points(json_body)
-                except ConnectionError:
-                    print "Couldn't write to Influx"
+                #try:
+                client.write_points(json_body)
+                #except ConnectionError:
+                #    print "Couldn't write to Influx"
         if temperature > 77.5:
             if heaterstatus:
                 GPIO.output(2, GPIO.HIGH)
-                heaterstatus = False
+                heater_switch_time_change = datetime.now()
+                heater_off_time = heater_switch_time_change - heater_switch_time
+                print heater_off_time
+                heater_switch_time = datetime.now()
+                heaterstatus = 0
                 print "Heater off"
                 json_body = [
                     {
@@ -54,10 +65,10 @@ while True:
                         }
                     }
                 ]
-                try:
-                    client.write_points(json_body)
-                except ConnectionError:
-                    print "Couldn't write to Influx"
+                #try:
+                client.write_points(json_body)
+                #except ConnectionError:
+                #    print "Couldn't write to Influx"
         json_body = [
             {
                 "measurement": "kombucha",
@@ -66,20 +77,20 @@ while True:
                 },
                 "fields": {
                     "humidity": humidity,
-    		        "temperature": temperature
+    		    "temperature": temperature
                 }
             }
         ]
-        try:
-            client.write_points(json_body)
-        except ConnectionError:
-            print "Couldn't write to Influx"
+        #try:
+        client.write_points(json_body)
+        #except ConnectionError:
+        #    print "Couldn't write to Influx"
         time.sleep(10)
     except KeyboardInterrupt:
         print " Killing process"
         GPIO.cleanup()
         break
-    except:
-        print "Something fucked up"
-        GPIO.cleanup()
-        break
+    #except:    
+    #    print "Something fucked up"
+    #    GPIO.cleanup()
+    #    break
