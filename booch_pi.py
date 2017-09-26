@@ -1,9 +1,11 @@
 #!/usr/bin/python
 import RPi.GPIO as GPIO
 import time
+import requests
 from datetime import datetime
 import Adafruit_DHT
 from influxdb import InfluxDBClient
+import influxdb
 
 client = InfluxDBClient(host="192.168.0.250", port=8086, database="telegraf")
 
@@ -37,14 +39,18 @@ while True:
                             "kombucha": "environment1"
                         },
                         "fields": {
-            		        "heater_status": heaterstatus
+            		        "heater_status_int": heaterstatus
                         }
                     }
                 ]
-                #try:
-                client.write_points(json_body)
-                #except ConnectionError:
-                #    print "Couldn't write to Influx"
+                try:
+                    client.write_points(json_body)
+                except requests.ConnectionError:
+                    print "Couldn't connect to Influx"
+                except influxdb.exceptions.InfluxDBClientError as content:
+                    print content
+                    print "Couldn't write to Influx"
+
         if temperature > 77.5:
             if heaterstatus:
                 GPIO.output(2, GPIO.HIGH)
@@ -61,14 +67,18 @@ while True:
                             "kombucha": "environment1"
                         },
                         "fields": {
-            		        "heater_status": heaterstatus
+            		        "heater_status_int": heaterstatus
                         }
                     }
                 ]
-                #try:
-                client.write_points(json_body)
-                #except ConnectionError:
-                #    print "Couldn't write to Influx"
+                try:
+                    client.write_points(json_body)
+                except requests.ConnectionError:
+                    print "Couldn't connect to Influx" 
+                except influxdb.exceptions.InfluxDBClientError as content:
+                    print content
+                    print "Couldn't write to Influx"
+        heater_status_time = datetime.now() - heater_switch_time
         json_body = [
             {
                 "measurement": "kombucha",
@@ -77,20 +87,24 @@ while True:
                 },
                 "fields": {
                     "humidity": humidity,
-    		    "temperature": temperature
+    		    "temperature": temperature,
+                    "heater_status_time": heater_status_time.total_seconds()
                 }
             }
         ]
-        #try:
-        client.write_points(json_body)
-        #except ConnectionError:
-        #    print "Couldn't write to Influx"
+        try:
+            client.write_points(json_body)
+        except requests.ConnectionError:
+            print "Couldn't connect to Influx"
+        except influxdb.exceptions.InfluxDBClientError as content:
+            print content
+            print "Couldn't write to Influx"
         time.sleep(10)
     except KeyboardInterrupt:
         print " Killing process"
         GPIO.cleanup()
         break
-    #except:    
-    #    print "Something fucked up"
-    #    GPIO.cleanup()
-    #    break
+    except:    
+        print "Something fucked up"
+        GPIO.cleanup()
+        break
