@@ -17,4 +17,4 @@ The basic list of items used to create the system
 
 * [InfluxDB](https://portal.influxdata.com/downloads)
 * [Grafana](https://grafana.com/get)
-* [Adafruit](DHT Library https://github.com/adafruit/DHT-sensor-library)
+* [Adafruit DHT Library](https://github.com/adafruit/DHT-sensor-library)
