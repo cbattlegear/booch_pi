@@ -33,11 +33,11 @@ def send_confirmation_callback(message, result, user_context):
 
 def iothub_client_init():
     # prepare iothub client
-    client = IoTHubClient(iothub_connection_string, PROTOCOL)
+    iothub_client = IoTHubClient(iothub_connection_string, PROTOCOL)
     # set the time until a message times out
-    client.set_option("messageTimeout", MESSAGE_TIMEOUT)
-    client.set_option("logtrace", 0)
-    return client
+    iothub_client.set_option("messageTimeout", MESSAGE_TIMEOUT)
+    iothub_client.set_option("logtrace", 0)
+    return iothub_client
 
 # Setup for Influx client
 influx_client = InfluxDBClient(host="192.168.0.250", port=8086, database="telegraf")
@@ -51,6 +51,7 @@ heaterstatus = 0
 heater_switch_time = datetime.now()
 heater_switch_time_change = datetime.now()
 
+print iothub_connection_string
 iothub_client = iothub_client_init()
 message_counter = 0
 
