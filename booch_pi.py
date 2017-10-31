@@ -6,6 +6,7 @@ from datetime import datetime
 import Adafruit_DHT
 from influxdb import InfluxDBClient
 import influxdb
+import sys
 
 client = InfluxDBClient(host="192.168.0.250", port=8086, database="telegraf")
 
