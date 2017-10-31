@@ -106,5 +106,4 @@ while True:
         break
     except:    
         print "Something fucked up"
-        GPIO.cleanup()
-        break
+        print "Unexpected error:", sys.exc_info()[0]
